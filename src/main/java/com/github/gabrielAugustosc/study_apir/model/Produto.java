@@ -2,15 +2,13 @@ package com.github.gabrielAugustosc.study_apir.model;
 
 import java.math.BigDecimal;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class Produto {
-    private final Long id;
-    private final String nome;
-    private final BigDecimal valor;
+    private Long id;
+    private String nome;
+    private BigDecimal valor;
 
     
     public Produto(Long id, String nome, BigDecimal valor) {
@@ -18,10 +16,6 @@ public class Produto {
         this.nome = nome;
         this.valor = valor;
     }
-
-
-    
-   
 
     
 }
