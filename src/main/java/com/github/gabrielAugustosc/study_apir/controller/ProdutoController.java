@@ -1,6 +1,7 @@
 package com.github.gabrielAugustosc.study_apir.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,52 +16,61 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.gabrielAugustosc.study_apir.model.Produto;
-import com.github.gabrielAugustosc.study_apir.repository.RepositoryProdutoMockup;
+import com.github.gabrielAugustosc.study_apir.repository.ProdutoRepository;
 
 
 
 
 
 @RestController
-@RequestMapping("${api.version}/produtos")
+@RequestMapping("api/${api.version}/produtos")
 public class ProdutoController {
 
-
     @Autowired
-    private RepositoryProdutoMockup mockup;
+    private ProdutoRepository repository;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody Produto produto) {
-        mockup.create(produto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Produto criado");
+    public ResponseEntity<Produto> create(@RequestBody Produto produto) {         
+        return ResponseEntity.status(HttpStatus.CREATED).body(repository.save(produto));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Produto> findById(@PathVariable long id){
-       return mockup
+    @GetMapping("/{id}")    
+    public ResponseEntity<Produto> findById(@PathVariable Long id) { 
+        return repository
                 .findById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    } 
+                .orElse(ResponseEntity.notFound().build());        
+    }
 
-    @GetMapping
-    public ResponseEntity<List<Produto>> findAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(mockup.findAll());
+    @GetMapping    
+    public ResponseEntity<List<Produto>> findAll() {        
+        return ResponseEntity.ok(repository.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> update(@PathVariable Long id, @RequestBody Produto produto) {
-        if (mockup.update(id, produto)) {
-            return ResponseEntity.ok("Produto atualizado");
-        }else{
-        return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Produto> update(@PathVariable Long id, 
+                                @RequestBody Produto produto) {
+
+        Optional<Produto> optProduto = repository.findById(id);
+
+        if (optProduto.isPresent()) {
+            produto.setId(id);
+            Produto produtoAlterado = repository.save(produto);
+            return ResponseEntity.ok(produtoAlterado);
+        }else {
+            return ResponseEntity.notFound().build();
+        }        
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete() {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Produto excluído");
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) { 
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
 
+        // if (mockup.deleteById(id)) {
+        //    return ResponseEntity.noContent().build();
+        // } else {
+        //    return ResponseEntity.notFound().build();
+        // }        
     }
-
 }
